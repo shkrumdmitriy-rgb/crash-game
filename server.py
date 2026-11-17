@@ -5,14 +5,13 @@ import aiosqlite
 import hashlib
 import hmac
 from urllib.parse import parse_qsl
-from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from aiogram import Bot
 import websockets
 
-load_dotenv()
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+# Временный фикс: токен вписан прямо в код
+BOT_TOKEN = "8975049116:AAHvzcrRq6-THvq0y3bda4pHwswhnYQPBgo"
 bot = Bot(token=BOT_TOKEN)
 
 app = FastAPI()
@@ -84,7 +83,7 @@ async def ws_endpoint(ws: WebSocket):
                     result = [{"id": g.id, "title": g.title, "stars": g.star_count} for g in gifts]
                     await ws.send_json({"type": "gifts_list", "gifts": result})
                 except Exception as e:
-                    await ws.send_json({"type": "gifts_list", "gifts": []}) # Отправляем пустой список при ошибке
+                    await ws.send_json({"type": "gifts_list", "gifts": []})
 
             elif msg["type"] == "buy_gift" and user:
                 gift_id = msg.get("gift_id")
