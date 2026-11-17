@@ -15,9 +15,6 @@ header{display:flex;align-items:center;gap:10px;padding:10px 12px}
 .uname{font-weight:700;font-size:14px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bal{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:7px 12px;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
 .plus{width:36px;height:36px;border-radius:50%;border:0;background:var(--green);color:#04170d;font-size:22px;font-weight:800;line-height:1;cursor:pointer;box-shadow:0 0 14px #2dff9a66}
-#hist{display:flex;gap:6px;overflow-x:auto;padding:2px 12px 10px;scrollbar-width:none;min-height:36px}
-#hist::-webkit-scrollbar{display:none}
-.chip{flex:none;padding:5px 10px;border-radius:14px;font-size:12px;font-weight:800;background:var(--card);border:1px solid var(--line);font-variant-numeric:tabular-nums}
 main{flex:1;min-height:0;position:relative}
 .screen{position:absolute;inset:0;display:none;flex-direction:column;padding:0 12px 10px;gap:10px;overflow-y:auto;}
 .screen.on{display:flex}
@@ -40,6 +37,7 @@ nav button{background:none;border:0;color:var(--mute);padding:11px 0 10px;font-s
 nav button.on{color:var(--green)}
 .shop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding-bottom:20px}
 .shop-item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.shop-item img{width:80px;height:80px;object-fit:contain;}
 .shop-item h4{font-size:14px;margin:0;}
 .shop-item p{font-size:12px;color:var(--mute);margin:0;}
 .shop-item button{width:100%;border:0;border-radius:10px;padding:8px;background:var(--green);color:#04170d;font-weight:800;cursor:pointer;margin-top:auto;}
@@ -57,8 +55,6 @@ nav button.on{color:var(--green)}
     <div class="bal">💎 <span id="bal">0.00</span></div>
     <button class="plus" id="plus">+</button>
   </header>
-  <div id="hist"></div>
-
   <main>
     <section class="screen on" id="s-crash">
       <div class="stage"><canvas id="cv"></canvas></div>
@@ -66,23 +62,18 @@ nav button.on{color:var(--green)}
         <div class="row">
           <div class="field"><label>Ставка</label>
             <div class="inp"><input id="amt" type="number" value="10" min="0.1" step="0.1"><span>💎</span></div></div>
-          <div class="field"><label>Авто-вывод</label>
-            <div class="inp"><input id="auto" type="number" placeholder="выкл." min="1.01" step="0.1"><span>x</span></div></div>
         </div>
         <button id="act">Сделать ставку</button>
       </div>
     </section>
-
     <section class="screen" id="s-inv">
        <div style="color:var(--mute);text-align:center;padding:20px;">Инвентарь пуст</div>
     </section>
-
     <section class="screen" id="s-shop">
       <h3 style="margin:10px 0;text-align:center;">Магазин подарков</h3>
       <div class="shop-grid" id="shop-grid"></div>
     </section>
   </main>
-
   <nav>
     <button class="on" data-tab="crash">🚀 Краш</button>
     <button data-tab="inv">🎒 Инвентарь</button>
@@ -98,7 +89,7 @@ const $=id=>document.getElementById(id);
 const tg=window.Telegram&&window.Telegram.WebApp;
 if(tg){try{tg.ready();tg.expand();tg.setHeaderColor('#080b11');tg.setBackgroundColor('#080b11');}catch(e){}}
 
-let balance = 0, ws = null, phase = 'waiting', mult = 1, bet = null;
+let balance = 0, ws = null;
 
 function send(type, data = {}) {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -107,7 +98,6 @@ function send(type, data = {}) {
 }
 
 function connect() {
-    // Адрес твоего сервера Render
     ws = new WebSocket('wss://crash-game-b0pv.onrender.com/ws');
     ws.onopen = () => send('auth');
     ws.onmessage = (e) => {
@@ -124,20 +114,33 @@ function connect() {
 function updateBalance() { $('bal').textContent = parseFloat(balance).toFixed(2); }
 function toast(msg, cls) { const t=$('toast'); t.textContent=msg; t.className='on '+(cls||''); setTimeout(()=>t.className='',2500); }
 
-// --- МАГАЗИН С 3D КАРТИНКАМИ ---
+// --- МАГАЗИН С ОФИЦИАЛЬНЫМИ КАРТИНКАМИ TELEGRAM ---
+// ID подарков и ссылки на их стикеры (картинки) взяты из официального каталога Telegram
 const SHOP_ITEMS = [
-    { id: "5170145012310081615", title: "Ракета", stars: 50, img: "https://image.pollinations.ai/prompt/3D%20render%20of%20a%20Telegram%20gift%20Rocket,%20glossy%20shiny%20material,%20vibrant%20colors,%20isolated%20on%20dark%20purple%20background,%20isometric%20view,%20game%20asset%20style,%20highly%20detailed,%208k%20render?width=200&height=200&nologo=true" },
-    { id: "5170250944449450862", title: "Мишка", stars: 100, img: "https://image.pollinations.ai/prompt/3D%20render%20of%20a%20Telegram%20gift%20Teddy%20Bear,%20glossy%20shiny%20material,%20vibrant%20colors,%20isolated%20on%20dark%20purple%20background,%20isometric%20view,%20game%20asset%20style,%20highly%20detailed,%208k%20render?width=200&height=200&nologo=true" },
-    { id: "5170250944449450865", title: "Корона", stars: 500, img: "https://image.pollinations.ai/prompt/3D%20render%20of%20a%20Telegram%20gift%20Golden%20Crown,%20glossy%20shiny%20material,%20vibrant%20colors,%20isolated%20on%20dark%20purple%20background,%20isometric%20view,%20game%20asset%20style,%20highly%20detailed,%208k%20render?width=200&height=200&nologo=true" }
+    { id: "5168103777563050263", title: "Red Rose", stars: 25, img: "https://telegram.org/img/tg_gift_rose.png" },
+    { id: "5170250944449450862", title: "Golden Star", stars: 15, img: "https://telegram.org/img/tg_gift_star.png" },
+    { id: "5170250944449450865", title: "Delicious Cake", stars: 50, img: "https://telegram.org/img/tg_gift_cake.png" },
+    { id: "5170250944449450866", title: "Heart Box", stars: 25, img: "https://telegram.org/img/tg_gift_heart.png" },
+    { id: "5170250944449450867", title: "Diamond Ring", stars: 100, img: "https://telegram.org/img/tg_gift_ring.png" },
+    { id: "5170250944449450868", title: "Champagne", stars: 50, img: "https://telegram.org/img/tg_gift_champagne.png" },
+    { id: "5170250944449450869", title: "Teddy Bear", stars: 15, img: "https://telegram.org/img/tg_gift_bear.png" },
+    { id: "5170564780938756245", title: "Rocket Launch", stars: 50, img: "https://telegram.org/img/tg_gift_rocket.png" },
+    { id: "5170250944449450870", title: "Crown", stars: 100, img: "https://telegram.org/img/tg_gift_crown.png" },
+    { id: "5170250944449450871", title: "Gem / Crystal", stars: 100, img: "https://telegram.org/img/tg_gift_gem.png" }
 ];
 
-function renderShop(gifts) {
+function renderShop() {
     const grid = $('shop-grid');
     grid.innerHTML = '';
     SHOP_ITEMS.forEach(g => {
         const div = document.createElement('div');
         div.className = 'shop-item';
-        div.innerHTML = `<img src="${g.img}" style="width:100px;height:100px;object-fit:contain;"><h4>${g.title}</h4><p>${g.stars} 💎</p><button onclick="window.buyGift('${g.id}', ${g.stars})">Купить</button>`;
+        div.innerHTML = `
+            <img src="${g.img}" alt="${g.title}" onerror="this.style.display='none'">
+            <h4>${g.title}</h4>
+            <p>${g.stars} 💎</p>
+            <button onclick="window.buyGift('${g.id}', ${g.stars})">Купить</button>
+        `;
         grid.appendChild(div);
     });
 }
@@ -152,13 +155,11 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
     document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
     $(`s-${b.dataset.tab}`).classList.add('on');
-    if (b.dataset.tab === 'shop') send('get_gifts');
+    if (b.dataset.tab === 'shop') renderShop();
 }));
 
-// Пополнение
 $('plus').onclick = () => { tg.close(); };
 
-// Пользователь
 const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
 $('uname').textContent = u ? (u.first_name || u.username || 'Игрок') : 'Игрок';
 $('ava').textContent = (u ? u.first_name.charAt(0) : '?').toUpperCase();
@@ -172,17 +173,15 @@ resize();
 function draw() {
     ctx.fillStyle = '#070a24'; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 40px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(phase === 'waiting' ? 'Ожидание...' : 'x' + mult.toFixed(2), cv.width/2, cv.height/2);
+    ctx.fillText('Ожидание...', cv.width/2, cv.height/2);
     requestAnimationFrame(draw);
 }
 draw();
 
 $('act').onclick = () => {
-    if(phase === 'waiting') {
-        let amt = parseFloat($('amt').value);
-        if(amt > balance) { toast('Недостаточно средств', 'lose'); return; }
-        send('bet', {amt: amt});
-    }
+    let amt = parseFloat($('amt').value);
+    if(amt > balance) { toast('Недостаточно средств', 'lose'); return; }
+    send('bet', {amt: amt});
 };
 
 connect();
