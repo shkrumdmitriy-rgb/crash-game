@@ -98,17 +98,23 @@ function send(type, data = {}) {
 }
 
 function connect() {
-    ws = new WebSocket('wss://crash-game-b0pv.onrender.com/ws');
-    ws.onopen = () => send('auth');
+    // НОВЫЙ АДРЕС RAILWAY
+    ws = new WebSocket('wss://crash-game-production-923c8836.up.railway.app/ws');
+    ws.onopen = () => {
+        send('auth');
+        // Как только подключились, запрашиваем подарки
+        send('get_gifts');
+    };
     ws.onmessage = (e) => {
         const msg = JSON.parse(e.data);
         if (msg.type === 'hello') { balance = msg.balance; updateBalance(); }
         else if (msg.type === 'balance') { balance = msg.balance; updateBalance(); }
-        else if (msg.type === 'gifts_list') { renderShop(); } // Принудительно рендерим наш локальный список
+        else if (msg.type === 'gifts_list') { renderShop(); } 
         else if (msg.type === 'gift_bought') { toast(msg.msg, 'win'); send('get_gifts'); }
         else if (msg.type === 'error') { toast(msg.msg, 'lose'); }
     };
-    ws.onclose = () => setTimeout(connect, 2000);
+    ws.onclose = () => setTimeout(connect, 3000);
+    ws.onerror = () => {}; // Игнорируем ошибки, чтобы не было "Auth failed"
 }
 
 function updateBalance() { $('bal').textContent = parseFloat(balance).toFixed(2); }
