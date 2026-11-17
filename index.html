@@ -104,7 +104,7 @@ function connect() {
         const msg = JSON.parse(e.data);
         if (msg.type === 'hello') { balance = msg.balance; updateBalance(); }
         else if (msg.type === 'balance') { balance = msg.balance; updateBalance(); }
-        else if (msg.type === 'gifts_list') { renderShop(msg.gifts); }
+        else if (msg.type === 'gifts_list') { renderShop(); } // Принудительно рендерим наш локальный список
         else if (msg.type === 'gift_bought') { toast(msg.msg, 'win'); send('get_gifts'); }
         else if (msg.type === 'error') { toast(msg.msg, 'lose'); }
     };
@@ -115,17 +115,13 @@ function updateBalance() { $('bal').textContent = parseFloat(balance).toFixed(2)
 function toast(msg, cls) { const t=$('toast'); t.textContent=msg; t.className='on '+(cls||''); setTimeout(()=>t.className='',2500); }
 
 // --- МАГАЗИН С ОФИЦИАЛЬНЫМИ КАРТИНКАМИ TELEGRAM ---
-// ID подарков и ссылки на их стикеры (картинки) взяты из официального каталога Telegram
 const SHOP_ITEMS = [
     { id: "5168103777563050263", title: "Red Rose", stars: 25, img: "https://telegram.org/img/tg_gift_rose.png" },
-    { id: "5170250944449450862", title: "Golden Star", stars: 15, img: "https://telegram.org/img/tg_gift_star.png" },
     { id: "5170250944449450865", title: "Delicious Cake", stars: 50, img: "https://telegram.org/img/tg_gift_cake.png" },
-    { id: "5170250944449450866", title: "Heart Box", stars: 25, img: "https://telegram.org/img/tg_gift_heart.png" },
     { id: "5170250944449450867", title: "Diamond Ring", stars: 100, img: "https://telegram.org/img/tg_gift_ring.png" },
     { id: "5170250944449450868", title: "Champagne", stars: 50, img: "https://telegram.org/img/tg_gift_champagne.png" },
     { id: "5170250944449450869", title: "Teddy Bear", stars: 15, img: "https://telegram.org/img/tg_gift_bear.png" },
     { id: "5170564780938756245", title: "Rocket Launch", stars: 50, img: "https://telegram.org/img/tg_gift_rocket.png" },
-    { id: "5170250944449450870", title: "Crown", stars: 100, img: "https://telegram.org/img/tg_gift_crown.png" },
     { id: "5170250944449450871", title: "Gem / Crystal", stars: 100, img: "https://telegram.org/img/tg_gift_gem.png" }
 ];
 
@@ -155,7 +151,7 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
     document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
     $(`s-${b.dataset.tab}`).classList.add('on');
-    if (b.dataset.tab === 'shop') renderShop();
+    if (b.dataset.tab === 'shop') renderShop(); // Локальный рендер
 }));
 
 $('plus').onclick = () => { tg.close(); };
