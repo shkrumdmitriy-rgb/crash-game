@@ -4,7 +4,7 @@ import aiosqlite
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 load_dotenv()
@@ -13,7 +13,6 @@ WEBAPP_URL = os.getenv("WEBAPP_URL", "https://crash111.netlify.app/")
 
 dp = Dispatcher()
 
-# --- СОЗДАНИЕ ТАБЛИЦЫ ПРИ СТАРТЕ ---
 async def init_db():
     async with aiosqlite.connect("users.db") as db:
         await db.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, balance INTEGER DEFAULT 100)")
@@ -21,7 +20,6 @@ async def init_db():
 
 @dp.message(CommandStart())
 async def start(message: Message):
-    # Создаем юзера, если его нет
     async with aiosqlite.connect("users.db") as db:
         await db.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (message.from_user.id,))
         await db.commit()
@@ -29,6 +27,7 @@ async def start(message: Message):
     kb = InlineKeyboardBuilder()
     kb.button(text="🚀 Открыть игру", web_app=WebAppInfo(url=WEBAPP_URL))
     kb.button(text="💎 Пополнить баланс", callback_data="topup")
+    kb.button(text="🛍 Магазин подарков", web_app=WebAppInfo(url=WEBAPP_URL)) # Теперь это кнопка WebApp
     
     await message.answer(
         f"👋 <b>Привет, {message.from_user.first_name}!</b>\n\n"
@@ -59,7 +58,7 @@ async def on_paid(message: Message):
     await message.answer("✅ Баланс пополнен на 10 💎!")
 
 async def main():
-    await init_db() # <-- ВАЖНО: создаем таблицу при запуске бота
+    await init_db()
     bot = Bot(token=BOT_TOKEN)
     print("Бот запущен!")
     await dp.start_polling(bot)
