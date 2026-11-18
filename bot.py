@@ -4,18 +4,24 @@ import aiosqlite
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 load_dotenv()
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBAPP_URL = os.getenv("WEBAPP_URL")
+BOT_TOKEN = os.getenv("BOT_TOKEN") or "8975049116:AAHvzcrRq6-THvq0y3bda4pHwswhnYQPBgo"
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://crash111.netlify.app/")
 
 dp = Dispatcher()
 
+# --- СОЗДАНИЕ ТАБЛИЦЫ ПРИ СТАРТЕ ---
+async def init_db():
+    async with aiosqlite.connect("users.db") as db:
+        await db.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, balance INTEGER DEFAULT 100)")
+        await db.commit()
+
 @dp.message(CommandStart())
 async def start(message: Message):
-    # Создаем юзера, но НЕ показываем баланс в сообщении
+    # Создаем юзера, если его нет
     async with aiosqlite.connect("users.db") as db:
         await db.execute("INSERT OR IGNORE INTO users (user_id) VALUES (?)", (message.from_user.id,))
         await db.commit()
@@ -27,7 +33,7 @@ async def start(message: Message):
     await message.answer(
         f"👋 <b>Привет, {message.from_user.first_name}!</b>\n\n"
         "Добро пожаловать в <b>Crash Rocket</b> 🚀\n"
-        "Нажми кнопку ниже, чтобы начать играть!",
+        "Нажми кнопку ниже, чтобы начать!",
         reply_markup=kb.as_markup(),
         parse_mode="HTML"
     )
@@ -50,10 +56,12 @@ async def on_paid(message: Message):
     async with aiosqlite.connect("users.db") as db:
         await db.execute("UPDATE users SET balance = balance + 10 WHERE user_id = ?", (message.from_user.id,))
         await db.commit()
-    await message.answer("✅ Баланс пополнен на 10 💎! Открой игру заново.")
+    await message.answer("✅ Баланс пополнен на 10 💎!")
 
 async def main():
+    await init_db() # <-- ВАЖНО: создаем таблицу при запуске бота
     bot = Bot(token=BOT_TOKEN)
+    print("Бот запущен!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
