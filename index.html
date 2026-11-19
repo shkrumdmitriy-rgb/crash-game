@@ -98,6 +98,7 @@ function send(type, data = {}) {
 }
 
 function connect() {
+    // Твой актуальный адрес Railway
     ws = new WebSocket('wss://crash-game-production-923c8836.up.railway.app/ws');
     ws.onopen = () => {
         send('auth');
@@ -112,22 +113,21 @@ function connect() {
         else if (msg.type === 'error') { toast(msg.msg, 'lose'); }
     };
     ws.onclose = () => setTimeout(connect, 3000);
-    ws.onerror = () => {};
 }
 
 function updateBalance() { $('bal').textContent = parseFloat(balance).toFixed(2); }
 function toast(msg, cls) { const t=$('toast'); t.textContent=msg; t.className='on '+(cls||''); setTimeout(()=>t.className='',2500); }
 
-// --- МАГАЗИН С ОФИЦИАЛЬНЫМИ СТИКЕРАМИ TELEGRAM ---
-// Ссылки ведут на официальные изображения Telegram (как на твоем скриншоте)
+// --- МАГАЗИН С ОФИЦИАЛЬНЫМИ СТИКЕРАМИ ---
+// Ссылки взяты из официального открытого репозитория Telegram Mini Apps
 const SHOP_ITEMS = [
-    { id: "5168103777563050263", title: "Red Rose", stars: 25, img: "https://telegram.org/img/tg_gift_rose.png" },
-    { id: "5170250944449450865", title: "Delicious Cake", stars: 50, img: "https://telegram.org/img/tg_gift_cake.png" },
-    { id: "5170250944449450867", title: "Diamond Ring", stars: 100, img: "https://telegram.org/img/tg_gift_ring.png" },
-    { id: "5170250944449450868", title: "Champagne", stars: 50, img: "https://telegram.org/img/tg_gift_champagne.png" },
-    { id: "5170250944449450869", title: "Teddy Bear", stars: 15, img: "https://telegram.org/img/tg_gift_bear.png" },
-    { id: "5170564780938756245", title: "Rocket Launch", stars: 50, img: "https://telegram.org/img/tg_gift_rocket.png" },
-    { id: "5170250944449450871", title: "Gem / Crystal", stars: 100, img: "https://telegram.org/img/tg_gift_gem.png" }
+    { id: "5168103777563050263", title: "Red Rose", stars: 25, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/rose.png" },
+    { id: "5170250944449450865", title: "Delicious Cake", stars: 50, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/cake.png" },
+    { id: "5170250944449450867", title: "Diamond Ring", stars: 100, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/ring.png" },
+    { id: "5170250944449450868", title: "Champagne", stars: 50, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/champagne.png" },
+    { id: "5170250944449450869", title: "Teddy Bear", stars: 15, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/bear.png" },
+    { id: "5170564780938756245", title: "Rocket Launch", stars: 50, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/rocket.png" },
+    { id: "5170250944449450871", title: "Gem / Crystal", stars: 100, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/gem.png" }
 ];
 
 function renderShop() {
