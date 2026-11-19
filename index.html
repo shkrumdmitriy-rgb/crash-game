@@ -52,7 +52,7 @@ nav button.on{color:var(--green)}
   <header>
     <div class="ava" id="ava">?</div>
     <div class="uname" id="uname">Игрок</div>
-    <div class="bal">💎 <span id="bal">0.00</span></div>
+    <div class="bal">⭐ <span id="bal">0.00</span></div>
     <button class="plus" id="plus">+</button>
   </header>
   <main>
@@ -61,7 +61,7 @@ nav button.on{color:var(--green)}
       <div class="panel">
         <div class="row">
           <div class="field"><label>Ставка</label>
-            <div class="inp"><input id="amt" type="number" value="10" min="0.1" step="0.1"><span>💎</span></div></div>
+            <div class="inp"><input id="amt" type="number" value="10" min="0.1" step="0.1"><span>⭐</span></div></div>
         </div>
         <button id="act">Сделать ставку</button>
       </div>
@@ -98,7 +98,6 @@ function send(type, data = {}) {
 }
 
 function connect() {
-    // Твой актуальный адрес Railway
     ws = new WebSocket('wss://crash-game-production-923c8836.up.railway.app/ws');
     ws.onopen = () => {
         send('auth');
@@ -118,8 +117,6 @@ function connect() {
 function updateBalance() { $('bal').textContent = parseFloat(balance).toFixed(2); }
 function toast(msg, cls) { const t=$('toast'); t.textContent=msg; t.className='on '+(cls||''); setTimeout(()=>t.className='',2500); }
 
-// --- МАГАЗИН С ОФИЦИАЛЬНЫМИ СТИКЕРАМИ ---
-// Ссылки взяты из официального открытого репозитория Telegram Mini Apps
 const SHOP_ITEMS = [
     { id: "5168103777563050263", title: "Red Rose", stars: 25, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/rose.png" },
     { id: "5170250944449450865", title: "Delicious Cake", stars: 50, img: "https://raw.githubusercontent.com/Telegram-Mini-Apps/gifts/main/assets/cake.png" },
@@ -139,7 +136,7 @@ function renderShop() {
         div.innerHTML = `
             <img src="${g.img}" alt="${g.title}" onerror="this.style.display='none'">
             <h4>${g.title}</h4>
-            <p>${g.stars} 💎</p>
+            <p>${g.stars} ⭐</p>
             <button onclick="window.buyGift('${g.id}', ${g.stars})">Купить</button>
         `;
         grid.appendChild(div);
@@ -147,11 +144,10 @@ function renderShop() {
 }
 
 window.buyGift = (giftId, price) => {
-    if (balance < price) { toast('Недостаточно 💎', 'lose'); return; }
+    if (balance < price) { toast('Недостаточно ⭐', 'lose'); return; }
     send('buy_gift', { gift_id: giftId, price: price });
 };
 
-// Навигация
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
@@ -159,14 +155,13 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
     if (b.dataset.tab === 'shop') renderShop();
 }));
 
-// --- ПОПОЛНЕНИЕ (Кнопка +) ---
 $('plus').onclick = () => {
     tg.showPopup({
         title: "Пополнение",
         message: "Выберите сумму пополнения",
         buttons: [
-            { id: "10", type: "default", text: "10 ⭐ (10 💎)" },
-            { id: "50", type: "default", text: "50 ⭐ (50 💎)" },
+            { id: "10", type: "default", text: "10 ⭐ (10 ⭐)" },
+            { id: "50", type: "default", text: "50 ⭐ (50 ⭐)" },
             { id: "cancel", type: "cancel", text: "Отмена" }
         ]
     }, (buttonId) => {
@@ -180,7 +175,6 @@ const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
 $('uname').textContent = u ? (u.first_name || u.username || 'Игрок') : 'Игрок';
 $('ava').textContent = (u ? u.first_name.charAt(0) : '?').toUpperCase();
 
-// --- ИГРА (Канвас) ---
 const cv = $('cv'), ctx = cv.getContext('2d');
 function resize() { const r=cv.parentElement.getBoundingClientRect(); cv.width=r.width; cv.height=r.height; }
 window.addEventListener('resize', resize);
